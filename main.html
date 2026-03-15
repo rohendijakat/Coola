@@ -686,3 +686,89 @@
       function loadState() {
         try {
           const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const data = JSON.parse(raw);
+            state.zones = data.zones || [];
+            state.readings = data.readings || [];
+            state.schedules = data.schedules || [];
+            state.hysteresis = data.hysteresis || [];
+          }
+        } catch (e) {
+          console.warn('Could not load state', e);
+        }
+      }
+
+      function loadSettings() {
+        try {
+          const raw = localStorage.getItem(SETTINGS_KEY);
+          if (raw) {
+            const s = JSON.parse(raw);
+            document.getElementById('settingsRpcUrl').value = s.rpcUrl || '';
+            document.getElementById('settingsContract').value = s.contract || '';
+            document.getElementById('settingsDefaultSetpoint').value = s.defaultSetpoint ?? 22;
+          }
+        } catch (e) {}
+      }
+
+      function saveSettings() {
+        const s = {
+          rpcUrl: document.getElementById('settingsRpcUrl').value.trim(),
+          contract: document.getElementById('settingsContract').value.trim(),
+          defaultSetpoint: parseFloat(document.getElementById('settingsDefaultSetpoint').value) || 22
+        };
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify({
+            zones: state.zones,
+            readings: state.readings,
+            schedules: state.schedules,
+            hysteresis: state.hysteresis
+          }));
+        } catch (e) {
+          console.warn('Could not save state', e);
+        }
+      }
+
+      function renderStats() {
+        document.getElementById('statZones').textContent = state.zones.length;
+        const totalReadings = state.readings.length;
+        document.getElementById('statReadings').textContent = totalReadings;
+        let avg = '—';
+        if (totalReadings > 0) {
+          const sum = state.readings.reduce((a, r) => a + r.tempCelsius, 0);
+          avg = (sum / totalReadings).toFixed(1);
+        }
+        document.getElementById('statAvgTemp').textContent = avg;
+        const totalSched = state.schedules.reduce((a, s) => a + (s.zones ? 0 : 1), 0) + state.schedules.length;
+        document.getElementById('statSchedules').textContent = state.schedules.length;
+      }
+
+      function renderZoneGrid() {
+        const grid = document.getElementById('zoneGrid');
+        const empty = document.getElementById('emptyZones');
+        if (state.zones.length === 0) {
+          grid.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        grid.innerHTML = state.zones.map(z => {
+          const readingsForZone = state.readings.filter(r => r.zoneId === z.zoneId);
+          const last = readingsForZone.length ? readingsForZone[readingsForZone.length - 1] : null;
+          const currentTemp = last ? last.tempCelsius.toFixed(1) : '—';
+          const pct = Math.min(100, Math.max(0, ((z.setpointDecicelsius / 10 - 10) / 30) * 100));
+          return `
+            <div class="zone-card">
+              <div class="name">${escapeHtml(z.label || z.zoneId)}</div>
+              <div class="setpoint">${(z.setpointDecicelsius / 10).toFixed(1)}°C</div>
+              <div class="temp-gauge">
+                <div class="temp-gauge-fill ${z.coolingPreferred ? 'cool' : 'warm'}" style="width: ${pct}%"></div>
+              </div>
+              <div class="meta">Current: ${currentTemp}°C · ${readingsForZone.length} readings</div>
+            </div>
+          `;
+        }).join('');
+      }
