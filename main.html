@@ -1116,3 +1116,89 @@
       function copySummaryToClipboard() {
         try {
           navigator.clipboard.writeText(textSummary());
+          return true;
+        } catch (e) { return false; }
+      }
+      function decicelsiusToCelsius(d) { return d / 10; }
+      function celsiusToDecicelsius(c) { return Math.round(c * 10); }
+      function effectiveSetpointForZoneNow(zoneId, blockNum) {
+        const b = blockNum != null ? blockNum : 0;
+        return getEffectiveSetpoint(zoneId, b);
+      }
+      function hasScheduleForZone(zoneId) {
+        return state.schedules.some(s => s.zoneId === zoneId);
+      }
+      function hasHysteresisForZone(zoneId) {
+        return state.hysteresis.some(h => h.zoneId === zoneId);
+      }
+      function zoneDisplayName(zoneId) {
+        const z = getZoneById(zoneId);
+        return z ? (z.label || z.zoneId) : zoneId;
+      }
+      function readingsLatestN(zoneId, n) {
+        return getReadingsForZone(zoneId).slice().sort((a, b) => b.recordedAt - a.recordedAt).slice(0, n);
+      }
+      function allReadingsSortedByTime() {
+        return state.readings.slice().sort((a, b) => b.recordedAt - a.recordedAt);
+      }
+      function zonesWithReadings() {
+        return state.zones.filter(z => getReadingsForZone(z.zoneId).length > 0);
+      }
+      function zonesWithoutReadings() {
+        return state.zones.filter(z => getReadingsForZone(z.zoneId).length === 0);
+      }
+      function totalReadingsAcrossZones() {
+        return state.readings.length;
+      }
+      function averageSetpointAcrossZones() {
+        if (state.zones.length === 0) return null;
+        const sum = state.zones.reduce((a, z) => a + z.setpointDecicelsius, 0);
+        return sum / state.zones.length / 10;
+      }
+      function minSetpointCelsius() {
+        if (state.zones.length === 0) return null;
+        return Math.min.apply(null, state.zones.map(z => z.setpointDecicelsius / 10));
+      }
+      function maxSetpointCelsius() {
+        if (state.zones.length === 0) return null;
+        return Math.max.apply(null, state.zones.map(z => z.setpointDecicelsius / 10));
+      }
+      function coolingZonesCount() {
+        return state.zones.filter(z => z.coolingPreferred).length;
+      }
+      function heatingZonesCount() {
+        return state.zones.filter(z => !z.coolingPreferred).length;
+      }
+      function zonesBySetpointAsc() {
+        return state.zones.slice().sort((a, b) => a.setpointDecicelsius - b.setpointDecicelsius);
+      }
+      function zonesBySetpointDesc() {
+        return state.zones.slice().sort((a, b) => b.setpointDecicelsius - a.setpointDecicelsius);
+      }
+      function getStateSnapshot() {
+        return { zones: state.zones.length, readings: state.readings.length, schedules: state.schedules.length, hysteresis: state.hysteresis.length };
+      }
+      function hasAnyData() {
+        return state.zones.length > 0 || state.readings.length > 0 || state.schedules.length > 0 || state.hysteresis.length > 0;
+      }
+      function isEmpty() {
+        return !hasAnyData();
+      }
+      function zoneCount() { return state.zones.length; }
+
+      function renderDataSummary() {
+        const el = document.getElementById('dataSummary');
+        if (!el) return;
+        const range = temperatureRangeAll();
+        let html = 'Zones: ' + state.zones.length + ' · Readings: ' + state.readings.length + ' · Schedules: ' + state.schedules.length + ' · Hysteresis bands: ' + state.hysteresis.length;
+        if (range.min != null && range.max != null) {
+          html += '<br>Temperature range (all readings): ' + range.min.toFixed(1) + '°C – ' + range.max.toFixed(1) + '°C';
+        }
+        el.innerHTML = html;
+      }
+
+      function renderZoneHealthList() {
+        const el = document.getElementById('zoneHealthList');
+        if (!el) return;
+        if (state.zones.length === 0) {
+          el.innerHTML = '<p class="muted">No zones.</p>';
