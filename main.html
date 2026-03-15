@@ -600,3 +600,89 @@
         <h2>Decicelsius reference</h2>
         <p class="muted mb-1 text-sm">FridgAI and IceCool use setpoints in decicelsius (tenths of °C). Examples: 220 = 22.0°C, 185 = 18.5°C, 250 = 25.0°C. Valid range 0–500 (0°C–50°C). Hysteresis bands and schedule windows also use the same scale where applicable.</p>
       </div>
+      <div class="card">
+        <h2>Thermostat modes</h2>
+        <p class="muted mb-1 text-sm">Suggested mode (COOL / HEAT / HOLD) is derived from the last reading vs setpoint and hysteresis band. COOL: reading above high threshold. HEAT: reading below low threshold. HOLD: within band. Zone health (ok, hot, cold, stale, no_data) helps prioritize which zones need attention.</p>
+      </div>
+      <div class="card">
+        <h2>Version &amp; storage</h2>
+        <p class="muted text-sm">Coola v1. Data key: <code class="font-mono">coola_fridgai_data</code>. Settings key: <code class="font-mono">coola_fridgai_settings</code>. Clear data via Settings → Clear all data. Export JSON for full backup (zones, readings, schedules, hysteresis).</p>
+        <p class="muted text-sm mt-1">No server required: open this file in a browser or serve statically. Compatible with FridgAI contract (Solidity) and IceCool (Python) for household climatic control and AI temperature setpoint suggestions.</p>
+        <p class="muted text-sm mt-1">Dashboard shows zone overview and recent readings; Zones table includes avg temp and suggested mode; Readings and Schedules tabs manage per-zone data; Hysteresis defines dead bands.</p>
+        <p class="muted text-sm mt-1">Quick actions: Load sample data, Export zones CSV, Import zones CSV. Settings: RPC URL, contract address, default setpoint. Copy text summary for a quick report.</p>
+      </div>
+    </div>
+
+    <div id="modalAddSchedule" class="card" style="display: none; max-width: 520px; margin: 2rem auto;">
+      <h2>Add schedule window</h2>
+      <div class="form-group">
+        <label>Zone</label>
+        <select id="scheduleZoneSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Start block</label>
+        <input type="number" id="scheduleStartBlock" min="0" value="0">
+      </div>
+      <div class="form-group">
+        <label>End block</label>
+        <input type="number" id="scheduleEndBlock" min="1" value="100">
+      </div>
+      <div class="form-group">
+        <label>Setpoint (°C)</label>
+        <input type="number" id="scheduleSetpoint" step="0.1" min="0" max="50" value="22">
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="primary" id="btnSaveSchedule">Save window</button>
+        <button type="button" class="secondary" id="btnCancelSchedule">Cancel</button>
+      </div>
+    </div>
+
+    <div id="modalAddHysteresis" class="card" style="display: none; max-width: 480px; margin: 2rem auto;">
+      <h2>Add hysteresis band</h2>
+      <div class="form-group">
+        <label>Zone</label>
+        <select id="hysteresisZoneSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Low threshold (°C)</label>
+        <input type="number" id="hysteresisLow" step="0.1" value="21">
+      </div>
+      <div class="form-group">
+        <label>High threshold (°C)</label>
+        <input type="number" id="hysteresisHigh" step="0.1" value="23">
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="primary" id="btnSaveHysteresis">Save band</button>
+        <button type="button" class="secondary" id="btnCancelHysteresis">Cancel</button>
+      </div>
+    </div>
+
+    <div id="panelHysteresis" class="tab-panel" style="display: none;">
+      <div class="card">
+        <h2>Hysteresis bands</h2>
+        <p style="color: var(--textMuted); margin-bottom: 1rem;">Dead bands to reduce cycling. Add per zone.</p>
+        <button type="button" class="secondary" id="btnAddHysteresis">+ Add band</button>
+        <div id="hysteresisList" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <p>Coola · FridgAI household climatic control · Setpoints, hysteresis, schedules</p>
+    <p class="text-sm mt-1">Companion to FridgAI (on-chain) and IceCool (Python). Data in this UI is local; export/import for backup.</p>
+  </footer>
+
+  <script>
+    (function() {
+      const STORAGE_KEY = 'coola_fridgai_data';
+      const SETTINGS_KEY = 'coola_fridgai_settings';
+      const state = {
+        zones: [],
+        readings: [],
+        schedules: [],
+        hysteresis: []
+      };
+
+      function loadState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
