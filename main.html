@@ -84,3 +84,89 @@
     .stats-row {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-box {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      text-align: center;
+    }
+    .stat-box .value { font-size: 1.75rem; font-weight: 700; color: var(--accent); }
+    .stat-box .label { font-size: 0.8rem; color: var(--textMuted); margin-top: 0.25rem; }
+
+    .zone-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+    .zone-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .zone-card:hover { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .zone-card .name { font-weight: 600; font-size: 1.1rem; margin-bottom: 0.5rem; }
+    .zone-card .setpoint { font-size: 1.5rem; color: var(--cool); font-weight: 600; }
+    .zone-card .meta { font-size: 0.8rem; color: var(--textMuted); margin-top: 0.5rem; }
+
+    .temp-gauge {
+      width: 100%;
+      height: 8px;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 0.5rem 0;
+    }
+    .temp-gauge-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .temp-gauge-fill.cool { background: linear-gradient(90deg, var(--accent), var(--cool)); }
+    .temp-gauge-fill.warm { background: linear-gradient(90deg, var(--warm), #ef4444); }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 0.75rem; text-align: left; border-bottom: 1px solid var(--border); }
+    th { color: var(--textMuted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; }
+    tr:hover td { background: var(--surface2); }
+
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+    .badge-cool { background: rgba(34, 211, 238, 0.2); color: var(--cool); }
+    .badge-warm { background: rgba(251, 146, 60, 0.2); color: var(--warm); }
+    .badge-hold { background: rgba(74, 222, 128, 0.2); color: var(--success); }
+
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.95rem;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+    }
+    label { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; color: var(--textMuted); }
+    .form-group { margin-bottom: 1rem; }
+    button.primary {
+      background: var(--accent);
+      color: var(--bg);
+      border: none;
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius);
+      font-weight: 600;
