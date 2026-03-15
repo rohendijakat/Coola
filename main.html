@@ -170,3 +170,89 @@
       padding: 0.6rem 1.25rem;
       border-radius: var(--radius);
       font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button.primary:hover { background: var(--cool); }
+    button.secondary {
+      background: var(--surface2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius);
+      cursor: pointer;
+      font-family: inherit;
+    }
+    button.secondary:hover { background: var(--border); }
+
+    .tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .tabs button {
+      padding: 0.6rem 1rem;
+      border: none;
+      background: transparent;
+      color: var(--textMuted);
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 0.95rem;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+    }
+    .tabs button:hover { color: var(--text); }
+    .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .readings-chart {
+      height: 200px;
+      background: var(--surface2);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-top: 1rem;
+    }
+    .schedule-timeline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+    .schedule-block {
+      padding: 0.5rem 0.75rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+    .schedule-block .range { color: var(--textMuted); }
+    .schedule-block .setpoint { color: var(--cool); font-weight: 600; }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--textMuted);
+    }
+    .empty-state p { margin-top: 0.5rem; }
+
+    footer {
+      margin-top: 3rem;
+      padding: 1.5rem 2rem;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--textMuted);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 2rem;
+    }
+    .modal-overlay .card { max-width: 90vw; }
+    @media (max-width: 640px) {
