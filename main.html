@@ -858,3 +858,89 @@
         }
       }
 
+      function showPanel(name) {
+        document.querySelectorAll('.tab-panel').forEach(p => p.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        const panel = document.getElementById('panel' + name.charAt(0).toUpperCase() + name.slice(1));
+        const tab = document.querySelector('.tab[data-tab="' + name + '"]');
+        if (panel) panel.style.display = 'block';
+        if (tab) tab.classList.add('active');
+      }
+
+      function getZoneById(zoneId) {
+        return state.zones.find(z => z.zoneId === zoneId);
+      }
+      function getReadingsForZone(zoneId) {
+        return state.readings.filter(r => r.zoneId === zoneId);
+      }
+      function getSchedulesForZone(zoneId) {
+        return state.schedules.filter(s => s.zoneId === zoneId);
+      }
+      function getHysteresisForZone(zoneId) {
+        return state.hysteresis.filter(h => h.zoneId === zoneId);
+      }
+      function averageTempForZone(zoneId) {
+        const r = getReadingsForZone(zoneId);
+        if (r.length === 0) return null;
+        return r.reduce((a, x) => a + x.tempCelsius, 0) / r.length;
+      }
+      function suggestModeForZone(zoneId) {
+        const z = state.zones.find(z => z.zoneId === zoneId);
+        if (!z) return '—';
+        const readings = state.readings.filter(r => r.zoneId === zoneId);
+        if (readings.length === 0) return '—';
+        const last = readings[readings.length - 1];
+        const setpointC = z.setpointDecicelsius / 10;
+        const band = state.hysteresis.find(h => h.zoneId === zoneId);
+        const low = band ? band.lowCelsius : setpointC - 0.5;
+        const high = band ? band.highCelsius : setpointC + 0.5;
+        if (last.tempCelsius > high) return 'COOL';
+        if (last.tempCelsius < low) return 'HEAT';
+        return 'HOLD';
+      }
+      function getChartData(zoneId, lastN) {
+        const zoneReadings = state.readings.filter(r => r.zoneId === zoneId).slice(-(lastN || 50));
+        return zoneReadings.map(r => ({ t: r.recordedAt, y: r.tempCelsius }));
+      }
+      function formatTime(ts) {
+        const d = new Date(ts * 1000);
+        return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      }
+      function getEffectiveSetpoint(zoneId, blockNum) {
+        const z = state.zones.find(z => z.zoneId === zoneId);
+        if (!z) return null;
+        const sched = state.schedules.find(s => s.zoneId === zoneId && s.startBlock <= blockNum && blockNum <= s.endBlock);
+        return sched ? sched.setpointDecicelsius : z.setpointDecicelsius;
+      }
+      function addSampleData() {
+        if (state.zones.length > 0) return;
+        state.zones = [
+          { zoneId: 'living_room', setpointDecicelsius: 220, coolingPreferred: true, label: 'Living room', createdAt: Date.now() / 1000 },
+          { zoneId: 'bedroom', setpointDecicelsius: 210, coolingPreferred: true, label: 'Bedroom', createdAt: Date.now() / 1000 },
+          { zoneId: 'kitchen', setpointDecicelsius: 230, coolingPreferred: true, label: 'Kitchen', createdAt: Date.now() / 1000 }
+        ];
+        state.zones.forEach(z => {
+          for (let i = 0; i < 5; i++) {
+            state.readings.push({
+              zoneId: z.zoneId,
+              tempCelsius: (z.setpointDecicelsius / 10) + (Math.random() - 0.5) * 2,
+              recordedAt: Date.now() / 1000 - (5 - i) * 3600
+            });
+          }
+        });
+        saveState();
+        refreshAll();
+      }
+      function minMaxForZone(zoneId) {
+        const r = getReadingsForZone(zoneId);
+        if (r.length === 0) return { min: null, max: null };
+        const temps = r.map(x => x.tempCelsius);
+        return { min: Math.min.apply(null, temps), max: Math.max.apply(null, temps) };
+      }
+      function exportCSV() {
+        const rows = ['Zone ID,Setpoint (°C),Cooling,Label,Readings'];
+        state.zones.forEach(z => {
+          const n = state.readings.filter(r => r.zoneId === z.zoneId).length;
+          rows.push([z.zoneId, (z.setpointDecicelsius / 10).toFixed(1), z.coolingPreferred ? 'Yes' : 'No', (z.label || '').replace(/,/g, ';'), n].join(','));
+        });
+        const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
