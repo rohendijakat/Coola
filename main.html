@@ -944,3 +944,89 @@
           rows.push([z.zoneId, (z.setpointDecicelsius / 10).toFixed(1), z.coolingPreferred ? 'Yes' : 'No', (z.label || '').replace(/,/g, ';'), n].join(','));
         });
         const blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'coola_zones_' + new Date().toISOString().slice(0, 10) + '.csv';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }
+      function importCSV(text) {
+        const lines = text.trim().split('\n');
+        if (lines.length < 2) return 0;
+        let count = 0;
+        for (let i = 1; i < lines.length; i++) {
+          const parts = lines[i].split(',');
+          const zoneId = (parts[0] || '').trim().toLowerCase().replace(/\s/g, '_');
+          if (!zoneId) continue;
+          if (state.zones.some(z => z.zoneId === zoneId)) continue;
+          const setpoint = parseFloat(parts[1]) || 22;
+          const cooling = (parts[2] || '').trim().toLowerCase() in ['yes', 'true', '1'];
+          const label = (parts[3] || '').trim().replace(/;/g, ',');
+          state.zones.push({
+            zoneId,
+            setpointDecicelsius: Math.round(setpoint * 10),
+            coolingPreferred: cooling,
+            label: label.slice(0, 64),
+            createdAt: Date.now() / 1000
+          });
+          count++;
+        }
+        return count;
+      }
+
+      function validateZoneId(zoneId) {
+        if (!zoneId || typeof zoneId !== 'string') return false;
+        const trimmed = zoneId.trim().toLowerCase();
+        if (trimmed.length > 64) return false;
+        return /^[a-z0-9_-]+$/.test(trimmed);
+      }
+      function validateSetpointCelsius(c) {
+        const n = parseFloat(c);
+        return !isNaN(n) && n >= 0 && n <= 50;
+      }
+      function clampSetpointDecicelsius(d) {
+        return Math.max(0, Math.min(500, Math.round(d)));
+      }
+      function serializeStateForExport() {
+        return {
+          version: 1,
+          exportedAt: new Date().toISOString(),
+          zones: state.zones,
+          readings: state.readings,
+          schedules: state.schedules,
+          hysteresis: state.hysteresis
+        };
+      }
+      function deserializeStateFromImport(obj) {
+        if (!obj || typeof obj !== 'object') return false;
+        if (Array.isArray(obj.zones)) state.zones = obj.zones;
+        if (Array.isArray(obj.readings)) state.readings = obj.readings;
+        if (Array.isArray(obj.schedules)) state.schedules = obj.schedules;
+        if (Array.isArray(obj.hysteresis)) state.hysteresis = obj.hysteresis;
+        return true;
+      }
+      function getReadingCountByZone() {
+        const out = {};
+        state.zones.forEach(z => { out[z.zoneId] = 0; });
+        state.readings.forEach(r => { out[r.zoneId] = (out[r.zoneId] || 0) + 1; });
+        return out;
+      }
+      function getScheduleCountByZone() {
+        const out = {};
+        state.zones.forEach(z => { out[z.zoneId] = 0; });
+        state.schedules.forEach(s => { out[s.zoneId] = (out[s.zoneId] || 0) + 1; });
+        return out;
+      }
+      function getHysteresisCountByZone() {
+        const out = {};
+        state.zones.forEach(z => { out[z.zoneId] = 0; });
+        state.hysteresis.forEach(h => { out[h.zoneId] = (out[h.zoneId] || 0) + 1; });
+        return out;
+      }
+      function lastReadingForZone(zoneId) {
+        const r = state.readings.filter(x => x.zoneId === zoneId);
+        if (r.length === 0) return null;
+        r.sort((a, b) => a.recordedAt - b.recordedAt);
+        return r[r.length - 1];
+      }
+      function firstReadingForZone(zoneId) {
