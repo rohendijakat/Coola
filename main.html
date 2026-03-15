@@ -772,3 +772,89 @@
           `;
         }).join('');
       }
+
+      function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      function renderRecentReadings() {
+        const el = document.getElementById('recentReadings');
+        const empty = document.getElementById('emptyReadings');
+        const recent = state.readings.slice(-10).reverse();
+        if (recent.length === 0) {
+          el.innerHTML = '';
+          empty.style.display = 'block';
+          return;
+        }
+        empty.style.display = 'none';
+        el.innerHTML = '<table><thead><tr><th>Zone</th><th>Temp (°C)</th><th>Time</th></tr></thead><tbody>' +
+          recent.map(r => {
+            const zone = state.zones.find(z => z.zoneId === r.zoneId);
+            const name = zone ? (zone.label || zone.zoneId) : r.zoneId;
+            const time = new Date(r.recordedAt * 1000).toLocaleString();
+            return `<tr><td>${escapeHtml(name)}</td><td>${r.tempCelsius.toFixed(1)}</td><td>${time}</td></tr>`;
+          }).join('') + '</tbody></table>';
+      }
+
+      function renderZonesTable() {
+        const tbody = document.getElementById('zonesTableBody');
+        tbody.innerHTML = state.zones.map(z => {
+          const count = state.readings.filter(r => r.zoneId === z.zoneId).length;
+          const avg = averageTempForZone(z.zoneId);
+          const mode = suggestModeForZone(z.zoneId);
+          const avgStr = avg != null ? avg.toFixed(1) : '—';
+          return `<tr>
+            <td>${escapeHtml(z.zoneId)}</td>
+            <td>${(z.setpointDecicelsius / 10).toFixed(1)}</td>
+            <td>${z.coolingPreferred ? 'Yes' : 'No'}</td>
+            <td>${escapeHtml(z.label || '—')}</td>
+            <td>${count}</td>
+            <td>${avgStr}</td>
+            <td><span class="badge badge-${mode === 'COOL' ? 'cool' : mode === 'HEAT' ? 'warm' : 'hold'}">${mode}</span></td>
+          </tr>`;
+        }).join('');
+      }
+
+      function renderReadingsList() {
+        const zoneId = document.getElementById('readingsZoneSelect').value;
+        const list = document.getElementById('readingsList');
+        const filtered = state.readings.filter(r => r.zoneId === zoneId).slice(-50).reverse();
+        list.innerHTML = filtered.length === 0
+          ? '<p class="empty-state">No readings for this zone.</p>'
+          : '<table><thead><tr><th>Temp (°C)</th><th>Time</th></tr></thead><tbody>' +
+            filtered.map(r => `<tr><td>${r.tempCelsius.toFixed(1)}</td><td>${new Date(r.recordedAt * 1000).toLocaleString()}</td></tr>`).join('') + '</tbody></table>';
+      }
+
+      function renderSchedulesList() {
+        const list = document.getElementById('schedulesList');
+        if (state.schedules.length === 0) {
+          list.innerHTML = '<p class="empty-state">No schedule windows.</p>';
+          return;
+        }
+        list.innerHTML = state.schedules.map(s => {
+          const zone = state.zones.find(z => z.zoneId === s.zoneId);
+          const name = zone ? (zone.label || zone.zoneId) : s.zoneId;
+          return `<div class="schedule-block">
+            <div class="range">${escapeHtml(name)} · Blocks ${s.startBlock}–${s.endBlock}</div>
+            <div class="setpoint">${(s.setpointDecicelsius / 10).toFixed(1)}°C</div>
+          </div>`;
+        }).join('');
+      }
+
+      function populateZoneSelects() {
+        const opts = state.zones.map(z => `<option value="${escapeHtml(z.zoneId)}">${escapeHtml(z.label || z.zoneId)}</option>`).join('');
+        document.getElementById('readingsZoneSelect').innerHTML = opts || '<option value="">—</option>';
+        document.getElementById('readingZoneSelect').innerHTML = opts || '<option value="">—</option>';
+        const chartSel = document.getElementById('chartZoneSelect');
+        if (chartSel) {
+          chartSel.innerHTML = opts || '<option value="">—</option>';
+          if (state.zones.length) chartSel.value = state.zones[0].zoneId;
+        }
+        if (state.zones.length) {
+          document.getElementById('readingsZoneSelect').value = state.zones[0].zoneId;
+          document.getElementById('readingZoneSelect').value = state.zones[0].zoneId;
+        }
+      }
+
