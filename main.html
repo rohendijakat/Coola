@@ -514,3 +514,89 @@
         <div class="form-group">
           <label>Zone</label>
           <select id="readingsZoneSelect"></select>
+        </div>
+        <div id="readingsList"></div>
+      </div>
+    </div>
+
+    <div id="panelSchedules" class="tab-panel" style="display: none;">
+      <div class="card">
+        <h2>Schedule windows</h2>
+        <button type="button" class="secondary" id="btnAddSchedule">+ Add window</button>
+        <div id="schedulesList" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+
+    <div id="modalAddZone" class="card" style="display: none; max-width: 480px; margin: 2rem auto;">
+      <h2>Add zone</h2>
+      <div class="form-group">
+        <label>Zone ID</label>
+        <input type="text" id="newZoneId" placeholder="e.g. living_room">
+      </div>
+      <div class="form-group">
+        <label>Setpoint (°C)</label>
+        <input type="number" id="newZoneSetpoint" step="0.1" min="0" max="50" value="22">
+      </div>
+      <div class="form-group">
+        <label><input type="checkbox" id="newZoneCooling" checked> Prefer cooling</label>
+      </div>
+      <div class="form-group">
+        <label>Label (optional)</label>
+        <input type="text" id="newZoneLabel" placeholder="Living room">
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="primary" id="btnSaveZone">Save zone</button>
+        <button type="button" class="secondary" id="btnCancelZone">Cancel</button>
+      </div>
+    </div>
+
+    <div id="modalAddReading" class="card" style="display: none; max-width: 480px; margin: 2rem auto;">
+      <h2>Add reading</h2>
+      <div class="form-group">
+        <label>Zone</label>
+        <select id="readingZoneSelect"></select>
+      </div>
+      <div class="form-group">
+        <label>Temperature (°C)</label>
+        <input type="number" id="readingTemp" step="0.1" value="22">
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="primary" id="btnSaveReading">Save reading</button>
+        <button type="button" class="secondary" id="btnCancelReading">Cancel</button>
+      </div>
+    </div>
+
+    <div id="panelSettings" class="tab-panel" style="display: none;">
+      <div class="card">
+        <h2>Settings</h2>
+        <div class="form-group">
+          <label>RPC URL (for future chain integration)</label>
+          <input type="text" id="settingsRpcUrl" placeholder="https://eth.llamarpc.com">
+        </div>
+        <div class="form-group">
+          <label>Contract address (FridgAI)</label>
+          <input type="text" id="settingsContract" placeholder="0x...">
+        </div>
+        <div class="form-group">
+          <label>Default setpoint (°C)</label>
+          <input type="number" id="settingsDefaultSetpoint" step="0.1" min="0" max="50" value="22">
+        </div>
+        <button type="button" class="primary" id="btnSaveSettings">Save settings</button>
+      </div>
+      <div class="card">
+        <h2>Data</h2>
+        <p style="margin-bottom: 1rem; color: var(--textMuted);">Export or clear local data.</p>
+        <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" class="secondary" id="btnExportData">Export JSON</button>
+          <button type="button" class="secondary" id="btnClearData">Clear all data</button>
+          <button type="button" class="secondary" id="btnCopySummary">Copy text summary</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>RPC &amp; contract (optional)</h2>
+        <p class="muted mb-1 text-sm">For future integration with FridgAI contract: set RPC URL and contract address in Settings. IceCool app can use the same config to submit registerZone / recordSetpointReading transactions.</p>
+      </div>
+      <div class="card">
+        <h2>Decicelsius reference</h2>
+        <p class="muted mb-1 text-sm">FridgAI and IceCool use setpoints in decicelsius (tenths of °C). Examples: 220 = 22.0°C, 185 = 18.5°C, 250 = 25.0°C. Valid range 0–500 (0°C–50°C). Hysteresis bands and schedule windows also use the same scale where applicable.</p>
+      </div>
