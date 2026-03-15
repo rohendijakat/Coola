@@ -256,3 +256,89 @@
     }
     .modal-overlay .card { max-width: 90vw; }
     @media (max-width: 640px) {
+      .app-header { padding: 1rem; flex-direction: column; align-items: flex-start; }
+      .container { padding: 1rem; }
+      .zone-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    .temp-badge { font-weight: 600; }
+    .temp-badge.cool { color: var(--cool); }
+    .temp-badge.warm { color: var(--warm); }
+    .temp-badge.hold { color: var(--success); }
+    .muted { color: var(--textMuted); font-size: 0.9rem; }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mb-1 { margin-bottom: 0.5rem; }
+    .mb-2 { margin-bottom: 1rem; }
+    .flex { display: flex; }
+    .gap-1 { gap: 0.5rem; }
+    .gap-2 { gap: 1rem; }
+    .wrap { flex-wrap: wrap; }
+    .tooltip { position: relative; }
+    .tooltip:hover::after {
+      content: attr(data-tip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.35rem 0.6rem;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      z-index: 10;
+      margin-bottom: 4px;
+    }
+    .reading-row { display: flex; align-items: center; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .reading-row:last-child { border-bottom: none; }
+    .reading-temp { font-weight: 600; color: var(--accent); }
+    .reading-time { font-size: 0.85rem; color: var(--textMuted); }
+    .zone-name { font-weight: 600; }
+    .zone-meta { font-size: 0.8rem; color: var(--textMuted); margin-top: 0.25rem; }
+    .schedule-row { display: flex; align-items: center; gap: 1rem; padding: 0.6rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .schedule-row:last-child { border-bottom: none; }
+    .chart-placeholder { height: 180px; background: var(--surface2); border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: var(--textMuted); font-size: 0.9rem; }
+    .btn-sm { padding: 0.35rem 0.65rem; font-size: 0.85rem; }
+    .alert { padding: 0.75rem 1rem; border-radius: var(--radius); margin-bottom: 1rem; }
+    .alert-info { background: rgba(56, 189, 248, 0.15); border: 1px solid var(--accent); color: var(--text); }
+    .alert-warn { background: rgba(251, 191, 36, 0.15); border: 1px solid var(--warning); color: var(--text); }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+    @media (max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    .text-right { text-align: right; }
+    .text-center { text-align: center; }
+    .w-full { width: 100%; }
+    .max-w-sm { max-width: 24rem; }
+    .rounded { border-radius: var(--radius); }
+    .border { border: 1px solid var(--border); }
+    .p-2 { padding: 1rem; }
+    .pb-2 { padding-bottom: 1rem; }
+    .pt-2 { padding-top: 1rem; }
+    .hidden { display: none !important; }
+    .block { display: block; }
+    .inline-block { display: inline-block; }
+    .cursor-pointer { cursor: pointer; }
+    .opacity-75 { opacity: 0.75; }
+    .font-mono { font-family: var(--fontMono); }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .font-semibold { font-weight: 600; }
+    .font-bold { font-weight: 700; }
+    .uppercase { text-transform: uppercase; }
+    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .break-all { word-break: break-all; }
+    .select-none { user-select: none; }
+    .transition { transition: all 0.2s ease; }
+    .hover\:opacity-90:hover { opacity: 0.9; }
+    .focus\:ring:focus { box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.3); outline: none; }
+    .active\:scale-98:active { transform: scale(0.98); }
+    .scroll-y { overflow-y: auto; }
+    .max-h-48 { max-height: 12rem; }
+    .min-h-0 { min-height: 0; }
+    .aspect-video { aspect-ratio: 16 / 9; }
+    .object-cover { object-fit: cover; }
+    .bg-surface { background: var(--surface); }
+    .bg-surface2 { background: var(--surface2); }
+    .text-accent { color: var(--accent); }
+    .text-cool { color: var(--cool); }
+    .text-warm { color: var(--warm); }
