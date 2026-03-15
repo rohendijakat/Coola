@@ -1202,3 +1202,89 @@
         if (!el) return;
         if (state.zones.length === 0) {
           el.innerHTML = '<p class="muted">No zones.</p>';
+          return;
+        }
+        let html = '<table class="w-full"><tr><th>Zone</th><th>Health</th><th>Last temp</th><th>Trend</th></tr>';
+        state.zones.forEach(z => {
+          const health = zoneHealth(z.zoneId);
+          const last = lastReadingForZone(z.zoneId);
+          const trend = trendDirection(z.zoneId);
+          const lastStr = last ? last.tempCelsius.toFixed(1) + '°C' : '—';
+          const healthClass = health === 'ok' ? 'text-success' : health === 'hot' || health === 'cold' ? 'text-warm' : 'text-muted';
+          html += '<tr><td>' + escapeHtml(z.label || z.zoneId) + '</td><td class="' + healthClass + '">' + health + '</td><td>' + lastStr + '</td><td>' + trend + '</td></tr>';
+        });
+        html += '</table>';
+        el.innerHTML = html;
+      }
+
+      function refreshAll() {
+        renderStats();
+        renderZoneGrid();
+        renderRecentReadings();
+        renderZonesTable();
+        renderReadingsList();
+        renderSchedulesList();
+        renderHysteresisList();
+        renderDataSummary();
+        renderZoneHealthList();
+        populateZoneSelects();
+      }
+
+      document.querySelectorAll('.tab').forEach(btn => {
+        btn.addEventListener('click', function() {
+          showPanel(this.getAttribute('data-tab'));
+        });
+      });
+
+      document.getElementById('btnZones').addEventListener('click', () => showPanel('zones'));
+      document.getElementById('btnReadings').addEventListener('click', () => showPanel('readings'));
+      document.getElementById('btnSchedules').addEventListener('click', () => showPanel('schedules'));
+
+      document.getElementById('btnAddZone').addEventListener('click', function() {
+        document.getElementById('modalAddZone').style.display = 'block';
+        document.getElementById('newZoneId').value = '';
+        document.getElementById('newZoneSetpoint').value = '22';
+        document.getElementById('newZoneCooling').checked = true;
+        document.getElementById('newZoneLabel').value = '';
+      });
+
+      document.getElementById('btnCancelZone').addEventListener('click', function() {
+        document.getElementById('modalAddZone').style.display = 'none';
+      });
+
+      document.getElementById('btnSaveZone').addEventListener('click', function() {
+        const zoneId = document.getElementById('newZoneId').value.trim().toLowerCase().replace(/\s/g, '_');
+        if (!zoneId) return alert('Zone ID required');
+        if (state.zones.some(z => z.zoneId === zoneId)) return alert('Zone already exists');
+        const setpointDecicelsius = Math.round(parseFloat(document.getElementById('newZoneSetpoint').value) * 10);
+        const coolingPreferred = document.getElementById('newZoneCooling').checked;
+        const label = document.getElementById('newZoneLabel').value.trim();
+        state.zones.push({
+          zoneId,
+          setpointDecicelsius: Math.max(0, Math.min(500, setpointDecicelsius)),
+          coolingPreferred,
+          label: label.slice(0, 64),
+          createdAt: Date.now() / 1000
+        });
+        saveState();
+        refreshAll();
+        document.getElementById('modalAddZone').style.display = 'none';
+      });
+
+      document.getElementById('modalAddReading').style.display = 'none';
+      document.getElementById('btnAddReading') && document.getElementById('btnAddReading').addEventListener('click', function() {
+        document.getElementById('modalAddReading').style.display = 'block';
+        populateZoneSelects();
+      });
+      document.getElementById('btnCancelReading').addEventListener('click', function() {
+        document.getElementById('modalAddReading').style.display = 'none';
+      });
+      document.getElementById('btnSaveReading').addEventListener('click', function() {
+        const zoneId = document.getElementById('readingZoneSelect').value;
+        if (!zoneId) return alert('Select a zone');
+        const tempCelsius = parseFloat(document.getElementById('readingTemp').value);
+        if (isNaN(tempCelsius)) return alert('Invalid temperature');
+        state.readings.push({
+          zoneId,
+          tempCelsius,
+          recordedAt: Date.now() / 1000
