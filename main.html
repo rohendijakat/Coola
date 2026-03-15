@@ -1288,3 +1288,89 @@
           zoneId,
           tempCelsius,
           recordedAt: Date.now() / 1000
+        });
+        saveState();
+        refreshAll();
+        document.getElementById('modalAddReading').style.display = 'none';
+      });
+
+      document.getElementById('readingsZoneSelect').addEventListener('change', renderReadingsList);
+      const chartZoneSelect = document.getElementById('chartZoneSelect');
+      if (chartZoneSelect) {
+        function updateChartPlaceholder() {
+          const zoneId = chartZoneSelect.value;
+          const ph = document.getElementById('chartPlaceholder');
+          if (!zoneId || !ph) return;
+          const data = getChartData(zoneId, 50);
+          const name = getZoneById(zoneId) ? (getZoneById(zoneId).label || zoneId) : zoneId;
+          if (data.length === 0) {
+            ph.innerHTML = 'No readings for ' + escapeHtml(name);
+            return;
+          }
+          const minY = Math.min.apply(null, data.map(d => d.y));
+          const maxY = Math.max.apply(null, data.map(d => d.y));
+          const pad = (maxY - minY) * 0.1 || 0.5;
+          const lo = minY - pad;
+          const hi = maxY + pad;
+          let table = '<table class="w-full text-sm"><tr><th>#</th><th>Time</th><th>Temp (°C)</th></tr>';
+          data.slice(-20).reverse().forEach((d, i) => {
+            table += '<tr><td>' + (data.length - 20 + i) + '</td><td>' + formatTime(d.t) + '</td><td>' + d.y.toFixed(1) + '</td></tr>';
+          });
+          table += '</table>';
+          ph.innerHTML = '<div class="mb-1">' + data.length + ' readings for ' + escapeHtml(name) + ' (min ' + minY.toFixed(1) + '°C, max ' + maxY.toFixed(1) + '°C)</div><div class="scroll-y max-h-48">' + table + '</div>';
+        }
+        chartZoneSelect.addEventListener('change', updateChartPlaceholder);
+        setTimeout(updateChartPlaceholder, 100);
+      }
+      document.getElementById('btnAddSample').addEventListener('click', function() {
+        if (state.zones.length > 0 && !confirm('Replace current data with sample data?')) return;
+        state.zones = [];
+        state.readings = [];
+        state.schedules = [];
+        state.hysteresis = [];
+        addSampleData();
+      });
+      document.getElementById('btnExportCsv').addEventListener('click', exportCSV);
+      document.getElementById('importCsvFile').addEventListener('change', function(e) {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function() {
+          const n = importCSV(reader.result);
+          saveState();
+          refreshAll();
+          alert('Imported ' + n + ' zones.');
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      });
+
+      document.getElementById('btnSettings').addEventListener('click', function() {
+        loadSettings();
+        showPanel('settings');
+      });
+
+      document.getElementById('btnSaveSettings').addEventListener('click', function() {
+        saveSettings();
+        alert('Settings saved.');
+      });
+
+      document.getElementById('btnExportData').addEventListener('click', function() {
+        const data = JSON.stringify({ zones: state.zones, readings: state.readings, schedules: state.schedules, hysteresis: state.hysteresis }, null, 2);
+        const blob = new Blob([data], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'coola_export_' + new Date().toISOString().slice(0, 10) + '.json';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+
+      document.getElementById('btnClearData').addEventListener('click', function() {
+        if (!confirm('Clear all zones, readings, schedules and hysteresis?')) return;
+        state.zones = [];
+        state.readings = [];
+        state.schedules = [];
+        state.hysteresis = [];
+        saveState();
+        refreshAll();
+        alert('Data cleared.');
