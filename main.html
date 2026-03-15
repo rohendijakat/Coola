@@ -428,3 +428,89 @@
       <button type="button" class="tab" data-tab="settings">Settings</button>
     </div>
 
+    <div id="panelDashboard" class="tab-panel">
+      <div class="card">
+        <h2>Zone overview</h2>
+        <div class="zone-grid" id="zoneGrid"></div>
+        <div class="empty-state" id="emptyZones" style="display: none;">
+          <p>No zones yet. Add a zone to get started.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Recent readings</h2>
+        <div id="recentReadings"></div>
+        <div class="empty-state" id="emptyReadings" style="display: none;">
+          <p>No readings yet.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Temperature trend</h2>
+        <p class="muted mb-1">Select a zone to see chart data (placeholder).</p>
+        <div class="form-group" style="max-width: 200px;">
+          <label>Zone</label>
+          <select id="chartZoneSelect"></select>
+        </div>
+        <div class="chart-placeholder" id="chartPlaceholder">Chart: last 50 readings for selected zone</div>
+      </div>
+      <div class="card">
+        <h2>Quick actions</h2>
+        <p class="muted mb-2">FridgAI / IceCool companion: zones, setpoints, hysteresis, schedules.</p>
+        <div class="flex gap-2 wrap">
+          <button type="button" class="secondary" id="btnAddSample">Load sample data</button>
+          <button type="button" class="secondary" id="btnExportCsv">Export zones CSV</button>
+          <label class="secondary" style="margin: 0; padding: 0.6rem 1.25rem; cursor: pointer; border-radius: var(--radius); border: 1px solid var(--border);">Import zones CSV <input type="file" id="importCsvFile" accept=".csv,.txt" style="display: none;"></label>
+        </div>
+      </div>
+      <div class="card">
+        <h2>About Coola</h2>
+        <p class="muted mb-1">Coola is the web interface for FridgAI household climatic control. It works with the FridgAI on-chain registry and the IceCool Python app.</p>
+        <ul style="margin: 0.5rem 0 0 1.5rem; color: var(--textMuted); font-size: 0.9rem;">
+          <li>Zones: define setpoints (0.1°C) and cooling preference per zone.</li>
+          <li>Readings: log temperature readings per zone; used for trends and suggested mode.</li>
+          <li>Schedules: override setpoints by block range (for future chain sync).</li>
+          <li>Hysteresis: dead bands to reduce compressor/heater cycling.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h2>Data summary</h2>
+        <p class="muted mb-1">Aggregate counts and ranges (computed from current state).</p>
+        <div id="dataSummary" class="muted text-sm"></div>
+      </div>
+      <div class="card">
+        <h2>Keyboard &amp; tips</h2>
+        <p class="muted mb-1">Use the tabs to switch between Dashboard, Zones, Readings, Schedules, Hysteresis, and Settings. All data is stored in your browser (localStorage). Export JSON or CSV to backup. Import CSV with columns: Zone ID, Setpoint (°C), Cooling (Yes/No), Label.</p>
+        <p class="muted text-sm">FridgAI contract uses setpoint in decicelsius (0.1°C). IceCool CLI can sync zones and readings; Coola is the web companion for local or demo use.</p>
+      </div>
+      <div class="card">
+        <h2>Zone health (last reading)</h2>
+        <p class="muted mb-1 text-sm">Per-zone status from latest reading vs setpoint and hysteresis.</p>
+        <div id="zoneHealthList" class="text-sm"></div>
+      </div>
+    </div>
+
+    <div id="panelZones" class="tab-panel" style="display: none;">
+      <div class="card">
+        <h2>All zones</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Zone ID</th>
+              <th>Setpoint (°C)</th>
+              <th>Cooling</th>
+              <th>Label</th>
+              <th>Readings</th>
+              <th>Avg temp</th>
+              <th>Suggested mode</th>
+            </tr>
+          </thead>
+          <tbody id="zonesTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="panelReadings" class="tab-panel" style="display: none;">
+      <div class="card">
+        <h2>Temperature readings</h2>
+        <div class="form-group">
+          <label>Zone</label>
+          <select id="readingsZoneSelect"></select>
