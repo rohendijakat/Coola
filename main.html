@@ -1374,3 +1374,76 @@
         saveState();
         refreshAll();
         alert('Data cleared.');
+      });
+      document.getElementById('btnCopySummary').addEventListener('click', function() {
+        if (copySummaryToClipboard()) alert('Summary copied to clipboard.');
+        else alert('Could not copy.');
+      });
+
+      function renderHysteresisList() {
+        const list = document.getElementById('hysteresisList');
+        if (state.hysteresis.length === 0) {
+          list.innerHTML = '<p class="empty-state">No hysteresis bands.</p>';
+          return;
+        }
+        list.innerHTML = state.hysteresis.map((h, i) => {
+          const zone = state.zones.find(z => z.zoneId === h.zoneId);
+          const name = zone ? (zone.label || zone.zoneId) : h.zoneId;
+          return '<div class="schedule-block">' + escapeHtml(name) + ' · ' + h.lowCelsius.toFixed(1) + '–' + h.highCelsius.toFixed(1) + '°C</div>';
+        }).join('');
+      }
+
+      document.getElementById('btnAddSchedule') && document.getElementById('btnAddSchedule').addEventListener('click', function() {
+        document.getElementById('modalAddSchedule').style.display = 'block';
+        const opts = state.zones.map(z => '<option value="' + escapeHtml(z.zoneId) + '">' + escapeHtml(z.label || z.zoneId) + '</option>').join('');
+        document.getElementById('scheduleZoneSelect').innerHTML = opts || '<option value="">—</option>';
+        if (state.zones.length) document.getElementById('scheduleZoneSelect').value = state.zones[0].zoneId;
+      });
+      document.getElementById('btnCancelSchedule').addEventListener('click', function() {
+        document.getElementById('modalAddSchedule').style.display = 'none';
+      });
+      document.getElementById('btnSaveSchedule').addEventListener('click', function() {
+        const zoneId = document.getElementById('scheduleZoneSelect').value;
+        if (!zoneId) return alert('Select a zone');
+        const startBlock = parseInt(document.getElementById('scheduleStartBlock').value, 10) || 0;
+        const endBlock = parseInt(document.getElementById('scheduleEndBlock').value, 10) || 100;
+        if (startBlock >= endBlock) return alert('End block must be greater than start block');
+        const setpointDecicelsius = Math.round(parseFloat(document.getElementById('scheduleSetpoint').value) * 10);
+        state.schedules.push({ zoneId, startBlock, endBlock, setpointDecicelsius });
+        saveState();
+        refreshAll();
+        document.getElementById('modalAddSchedule').style.display = 'none';
+      });
+
+      document.getElementById('btnAddHysteresis').addEventListener('click', function() {
+        document.getElementById('modalAddHysteresis').style.display = 'block';
+        const opts = state.zones.map(z => '<option value="' + escapeHtml(z.zoneId) + '">' + escapeHtml(z.label || z.zoneId) + '</option>').join('');
+        document.getElementById('hysteresisZoneSelect').innerHTML = opts || '<option value="">—</option>';
+        if (state.zones.length) document.getElementById('hysteresisZoneSelect').value = state.zones[0].zoneId;
+      });
+      document.getElementById('btnCancelHysteresis').addEventListener('click', function() {
+        document.getElementById('modalAddHysteresis').style.display = 'none';
+      });
+      document.getElementById('btnSaveHysteresis').addEventListener('click', function() {
+        const zoneId = document.getElementById('hysteresisZoneSelect').value;
+        if (!zoneId) return alert('Select a zone');
+        const lowCelsius = parseFloat(document.getElementById('hysteresisLow').value);
+        const highCelsius = parseFloat(document.getElementById('hysteresisHigh').value);
+        if (lowCelsius >= highCelsius) return alert('Low must be less than high');
+        state.hysteresis.push({ zoneId, lowCelsius, highCelsius });
+        saveState();
+        refreshAll();
+        renderHysteresisList();
+        document.getElementById('modalAddHysteresis').style.display = 'none';
+      });
+
+      loadState();
+      loadSettings();
+      if (state.zones.length === 0 && state.readings.length === 0) {
+        addSampleData();
+      }
+      refreshAll();
+    })();
+  </script>
+</body>
+</html>
