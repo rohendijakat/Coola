@@ -342,3 +342,89 @@
     .text-accent { color: var(--accent); }
     .text-cool { color: var(--cool); }
     .text-warm { color: var(--warm); }
+    .text-success { color: var(--success); }
+    .text-muted { color: var(--textMuted); }
+    .border-accent { border-color: var(--accent); }
+    .ring-2 { box-shadow: 0 0 0 2px var(--border); }
+    .shadow-lg { box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    .z-10 { z-index: 10; }
+    .z-50 { z-index: 50; }
+    .z-100 { z-index: 100; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
+    .footer p { margin: 0.25rem 0; }
+    .footer .text-sm { font-size: 0.8rem; opacity: 0.85; }
+    .card-header { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+    .list-unstyled { list-style: none; padding-left: 0; }
+    .list-unstyled li { padding: 0.25rem 0; }
+    .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+    .badge-sm { font-size: 0.7rem; padding: 0.15rem 0.4rem; }
+    .table-compact th, .table-compact td { padding: 0.5rem; }
+    .bg-cool { background: rgba(34, 211, 238, 0.1); }
+    .bg-warm { background: rgba(251, 146, 60, 0.1); }
+    .rounded-full { border-radius: 9999px; }
+    .w-4 { width: 1rem; }
+    .h-4 { height: 1rem; }
+    .inline-flex { display: inline-flex; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+    .overflow-auto { overflow: auto; }
+    .whitespace-nowrap { white-space: nowrap; }
+    .leading-tight { line-height: 1.25; }
+    .leading-relaxed { line-height: 1.625; }
+    .tracking-tight { letter-spacing: -0.025em; }
+    .opacity-50 { opacity: 0.5; }
+    .hover\:opacity-100:hover { opacity: 1; }
+    .focus\:outline-none:focus { outline: none; }
+    .duration-200 { transition-duration: 0.2s; }
+    .ease-out { transition-timing-function: ease-out; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Coola</h1>
+      <p class="tagline">FridgAI household climate control</p>
+    </div>
+    <nav>
+      <button type="button" id="btnZones">Zones</button>
+      <button type="button" id="btnReadings">Readings</button>
+      <button type="button" id="btnSchedules">Schedules</button>
+      <button type="button" id="btnAddZone">+ Add zone</button>
+      <button type="button" id="btnAddReading">+ Add reading</button>
+      <button type="button" id="btnSettings">Settings</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <section class="stats-row" id="statsRow">
+      <div class="stat-box">
+        <div class="value" id="statZones">0</div>
+        <div class="label">Zones</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="statReadings">0</div>
+        <div class="label">Readings</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="statAvgTemp">—</div>
+        <div class="label">Avg temp (°C)</div>
+      </div>
+      <div class="stat-box">
+        <div class="value" id="statSchedules">0</div>
+        <div class="label">Schedule windows</div>
+      </div>
+    </section>
+
+    <div class="tabs">
+      <button type="button" class="tab active" data-tab="dashboard">Dashboard</button>
+      <button type="button" class="tab" data-tab="zones">Zones</button>
+      <button type="button" class="tab" data-tab="readings">Readings</button>
+      <button type="button" class="tab" data-tab="schedules">Schedules</button>
+      <button type="button" class="tab" data-tab="hysteresis">Hysteresis</button>
+      <button type="button" class="tab" data-tab="settings">Settings</button>
+    </div>
+
