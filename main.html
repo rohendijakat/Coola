@@ -1030,3 +1030,89 @@
         return r[r.length - 1];
       }
       function firstReadingForZone(zoneId) {
+        const r = state.readings.filter(x => x.zoneId === zoneId);
+        if (r.length === 0) return null;
+        r.sort((a, b) => a.recordedAt - b.recordedAt);
+        return r[0];
+      }
+      function temperatureRangeAll() {
+        if (state.readings.length === 0) return { min: null, max: null };
+        const temps = state.readings.map(r => r.tempCelsius);
+        return { min: Math.min.apply(null, temps), max: Math.max.apply(null, temps) };
+      }
+      function formatSetpointDisplay(decicelsius) {
+        return (decicelsius / 10).toFixed(1) + '°C';
+      }
+      function formatTempDisplay(celsius) {
+        return (celsius != null ? celsius.toFixed(1) : '—') + '°C';
+      }
+      function isZoneCoolingPreferred(zoneId) {
+        const z = getZoneById(zoneId);
+        return z ? z.coolingPreferred : false;
+      }
+      function getZoneSetpointCelsius(zoneId) {
+        const z = getZoneById(zoneId);
+        return z ? z.setpointDecicelsius / 10 : null;
+      }
+      function sortZonesByLabel() {
+        return state.zones.slice().sort((a, b) => (a.label || a.zoneId).localeCompare(b.label || b.zoneId));
+      }
+      function sortZonesBySetpoint() {
+        return state.zones.slice().sort((a, b) => a.setpointDecicelsius - b.setpointDecicelsius);
+      }
+      function sortReadingsByTime(zoneId) {
+        return getReadingsForZone(zoneId).slice().sort((a, b) => a.recordedAt - b.recordedAt);
+      }
+      function buildSimpleTrendLine(zoneId, maxPoints) {
+        const data = sortReadingsByTime(zoneId).slice(-(maxPoints || 30));
+        if (data.length === 0) return [];
+        return data.map(d => d.tempCelsius);
+      }
+      function trendDirection(zoneId) {
+        const data = buildSimpleTrendLine(zoneId, 10);
+        if (data.length < 2) return 'stable';
+        const first = data.slice(0, Math.floor(data.length / 2)).reduce((a, b) => a + b, 0) / (data.length / 2);
+        const last = data.slice(-Math.floor(data.length / 2)).reduce((a, b) => a + b, 0) / (data.length / 2);
+        if (last > first + 0.2) return 'rising';
+        if (last < first - 0.2) return 'falling';
+        return 'stable';
+      }
+      function suggestedAction(zoneId) {
+        const mode = suggestModeForZone(zoneId);
+        if (mode === 'COOL') return 'Increase cooling or lower setpoint';
+        if (mode === 'HEAT') return 'Increase heating or raise setpoint';
+        return 'Within band – no action';
+      }
+      function zoneHealth(zoneId) {
+        const z = getZoneById(zoneId);
+        if (!z) return 'unknown';
+        const r = getReadingsForZone(zoneId).length;
+        if (r === 0) return 'no_data';
+        const last = lastReadingForZone(zoneId);
+        if (!last) return 'no_data';
+        const age = Date.now() / 1000 - last.recordedAt;
+        if (age > 86400) return 'stale';
+        const setpointC = z.setpointDecicelsius / 10;
+        const band = state.hysteresis.find(h => h.zoneId === zoneId);
+        const low = band ? band.lowCelsius : setpointC - 0.5;
+        const high = band ? band.highCelsius : setpointC + 0.5;
+        if (last.tempCelsius > high + 1) return 'hot';
+        if (last.tempCelsius < low - 1) return 'cold';
+        return 'ok';
+      }
+      function allZoneIds() { return state.zones.map(z => z.zoneId); }
+      function readingCountTotal() { return state.readings.length; }
+      function scheduleCountTotal() { return state.schedules.length; }
+      function hysteresisCountTotal() { return state.hysteresis.length; }
+      function textSummary() {
+        let s = 'Coola summary\nZones: ' + state.zones.length + ', Readings: ' + state.readings.length + '\n';
+        state.zones.forEach(z => {
+          const last = lastReadingForZone(z.zoneId);
+          const health = zoneHealth(z.zoneId);
+          s += (z.label || z.zoneId) + ': setpoint ' + (z.setpointDecicelsius / 10).toFixed(1) + '°C, last ' + (last ? last.tempCelsius.toFixed(1) + '°C' : '—') + ', ' + health + '\n';
+        });
+        return s;
+      }
+      function copySummaryToClipboard() {
+        try {
+          navigator.clipboard.writeText(textSummary());
